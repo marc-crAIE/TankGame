@@ -5,19 +5,53 @@ VisualStudioVersion = 17.6.33717.318
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TankGame", "TankGame\TankGame.csproj", "{1E6415D0-687C-4D45-9321-2E70B066D900}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RayEngine", "Libs\RayEngine\RayEngine\RayEngine.csproj", "{4DCE5FFB-C076-43B4-8847-175C0808E714}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{195CF652-9C9C-4A27-A386-8CC0ECCECAF4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpMaths", "Libs\RayEngine\Libs\SharpMaths\SharpMaths\SharpMaths.csproj", "{F723734A-016C-4C08-AB69-A8E63BD3CB8B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpECS", "Libs\RayEngine\Libs\SharpECS\SharpECS\SharpECS.csproj", "{D02782A0-6C47-46C0-B133-0742FFF32216}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug With Profiler|Any CPU = Debug With Profiler|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E6415D0-687C-4D45-9321-2E70B066D900}.Debug With Profiler|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E6415D0-687C-4D45-9321-2E70B066D900}.Debug With Profiler|Any CPU.Build.0 = Debug|Any CPU
 		{1E6415D0-687C-4D45-9321-2E70B066D900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1E6415D0-687C-4D45-9321-2E70B066D900}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E6415D0-687C-4D45-9321-2E70B066D900}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E6415D0-687C-4D45-9321-2E70B066D900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Debug With Profiler|Any CPU.ActiveCfg = Debug With Profiler|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Debug With Profiler|Any CPU.Build.0 = Debug With Profiler|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DCE5FFB-C076-43B4-8847-175C0808E714}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Debug With Profiler|Any CPU.ActiveCfg = Debug|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Debug With Profiler|Any CPU.Build.0 = Debug|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Debug With Profiler|Any CPU.ActiveCfg = Debug With Profiler|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Debug With Profiler|Any CPU.Build.0 = Debug With Profiler|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D02782A0-6C47-46C0-B133-0742FFF32216}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4DCE5FFB-C076-43B4-8847-175C0808E714} = {195CF652-9C9C-4A27-A386-8CC0ECCECAF4}
+		{F723734A-016C-4C08-AB69-A8E63BD3CB8B} = {195CF652-9C9C-4A27-A386-8CC0ECCECAF4}
+		{D02782A0-6C47-46C0-B133-0742FFF32216} = {195CF652-9C9C-4A27-A386-8CC0ECCECAF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C687CC32-EB71-4A8A-BB06-7F317F704F51}

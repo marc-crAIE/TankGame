@@ -1,11 +1,9 @@
 ﻿using RayEngine.Core;
 using RayEngine.GameObjects;
+using RayEngine.GameObjects.Components;
 using RayEngine.Scenes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SharpMaths;
+using TankGame.Assets.Scripts;
 
 namespace TankGame
 {
@@ -13,13 +11,19 @@ namespace TankGame
     {
         private Scene Scene;
         private GameObject TankBody;
+        private GameObject TankTurret;
 
         public TankGame(ApplicationSpecification specification) : base(specification)
         {
             Scene = new Scene();
             SceneManager.LoadScene(Scene);
 
-            TankBody = new GameObject();
+            GameObject tankBody = new GameObject("Tank Body");
+            GameObject tankTurret = new GameObject("Tank Turret");
+            tankTurret.SetParent(ref tankBody);
+
+            tankBody.AddComponent<ScriptComponent>().Bind<TankScript>();
+            tankTurret.AddComponent<ScriptComponent>().Bind<TurretScript>();
         }
     }
 }

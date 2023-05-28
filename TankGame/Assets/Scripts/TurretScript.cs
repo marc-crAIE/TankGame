@@ -2,31 +2,35 @@
 using RayEngine.GameObjects;
 using RayEngine.GameObjects.Components;
 using SharpMaths;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TankGame.Assets.Scripts
 {
     internal class TurretScript : ScriptableGameObject
     {
         private TransformComponent _Transform;
+        private TransformComponent PivotTransform;
         private TransformComponent BodyTransform;
 
         public bool MouseControls = false;
 
-        private const float RotationSpeed = 1.5f;
+        private const float RotationSpeed = 2.5f;
+        private const float Scale = 1.0f;
 
         public override void OnCreate()
         {
-            AddComponent<SpriteComponent>(new Colour(0, 0, 255));
+            var sprite = AddComponent<SpriteComponent>(new Colour(255, 255, 255));
+            sprite.Texture = Resources.Textures.TankTurret;
 
-            Transform.Scale = new Vector2(1.5f, 0.5f);
+            Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
+            tankTextSize.Normalize();
+
+            // These values were grabbed when using the debugger editing tools
+            Transform.Translation = new Vector2(0.2f, 0.01f);
+            Transform.Scale = tankTextSize * Scale;
 
             _Transform = Transform;
             GameObject? tankBody = Scene.GetWithTag("Tank Body");
+            PivotTransform = tankBody.GetChildrenWithTag("Turret Pivot").GetComponent<TransformComponent>();
             if (tankBody is not null)
                 BodyTransform = tankBody.GetComponent<TransformComponent>();
         }
@@ -38,20 +42,20 @@ namespace TankGame.Assets.Scripts
             {
                 Vector3 mousePos = Input.GetMousePosition();
                 Vector3 tankPos = BodyTransform.Translation;
-                Quaternion tankRotation = new Quaternion(BodyTransform.Rotation + _Transform.Rotation);
+                Quaternion turretRotation = new Quaternion(BodyTransform.Rotation + PivotTransform.Rotation);
 
-                Vector3 dirToObject = (mousePos - tankPos);
-                dirToObject.Normalize();
+                Vector3 dirToMouse = mousePos - tankPos;
+                dirToMouse.Normalize();
 
-                Matrix4 tankMatrix = (Matrix4)tankRotation * Matrix4.Translation(tankPos);
+                Matrix4 tankMatrix = (Matrix4)turretRotation * Matrix4.Translation(tankPos);
                 Matrix4 inverseTankMatrix = tankMatrix.Inverse();
 
-                Vector3 mousePosTankSpace = inverseTankMatrix * dirToObject;
+                Vector3 mousePosTankSpace = inverseTankMatrix * dirToMouse;
                 mousePosTankSpace.Normalize();
 
                 float angleToMouse = (float)Math.Atan2(mousePosTankSpace.y, mousePosTankSpace.x);
 
-                _Transform.Rotation.z += angleToMouse * RotationSpeed * ts;
+                PivotTransform.Rotation.z += angleToMouse * RotationSpeed * ts;
 
                 if (Input.IsMouseButtonClicked(Mouse.MOUSE_BUTTON_LEFT))
                     Shoot();
@@ -59,9 +63,9 @@ namespace TankGame.Assets.Scripts
             else
             {
                 if (Input.IsKeyPressed(Key.KEY_Q))
-                    _Transform.Rotation.z -= RotationSpeed * ts;
+                    PivotTransform.Rotation.z -= RotationSpeed * ts;
                 if (Input.IsKeyPressed(Key.KEY_E))
-                    _Transform.Rotation.z += RotationSpeed * ts;
+                    PivotTransform.Rotation.z += RotationSpeed * ts;
 
                 // Shoot
                 if (Input.IsKeyTyped(Key.KEY_SPACE))
@@ -73,11 +77,11 @@ namespace TankGame.Assets.Scripts
         private void Shoot()
         {
             GameObject bullet = new GameObject("Bullet");
-            float angle = BodyTransform.Rotation.z + _Transform.Rotation.z;
+            float angle = BodyTransform.Rotation.z + PivotTransform.Rotation.z;
             bullet.AddComponent<ScriptComponent>().Bind<BulletScript>(angle);
 
-            var bulletTransform = bullet.GetComponent<TransformComponent>() = (Matrix4)BodyTransform * _Transform;
-            float turretLength = (BodyTransform.Scale * _Transform.Scale).x;
+            var bulletTransform = bullet.GetComponent<TransformComponent>() = (Matrix4)BodyTransform * PivotTransform * _Transform;
+            float turretLength = (BodyTransform.Scale * _Transform.Scale).x + _Transform.Translation.x;
             Vector2 offset = new Vector2((float)Math.Cos(angle) * turretLength, (float)Math.Sin(angle) * turretLength) / 2;
             bulletTransform.Translation += offset;
         }

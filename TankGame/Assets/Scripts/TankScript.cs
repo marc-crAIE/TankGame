@@ -11,14 +11,18 @@ namespace TankGame.Assets.Scripts
 
         private const float MovementSpeed = 50.0f;
         private const float RotationSpeed = 1.5f;
+        private const float Scale = 150.0f;
 
         public override void OnCreate()
         {
             Window window = Application.Instance.GetWindow();
             Transform.Translation = new Vector2(window.GetWidth() / 2f, window.GetHeight() / 2f);
-            Transform.Scale = new Vector2(30.0f, 30.0f);
 
-            AddComponent<SpriteComponent>(new Colour(255, 0, 0));
+            var sprite = AddComponent<SpriteComponent>(new Colour(255, 255, 255));
+            sprite.Texture = Resources.Textures.TankBody;
+            Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
+            tankTextSize.Normalize();
+            Transform.Scale = tankTextSize * Scale;
 
             _Transform = Transform;
         }

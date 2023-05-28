@@ -2,11 +2,6 @@
 using RayEngine.GameObjects;
 using RayEngine.GameObjects.Components;
 using SharpMaths;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TankGame.Assets.Scripts
 {
@@ -37,6 +32,12 @@ namespace TankGame.Assets.Scripts
         public override void OnUpdate(Timestep ts)
         {
             _Transform.Translation += Velocity * (Speed * ts);
+
+            Window window = Application.Instance.GetWindow();
+            Vector2 size = new Vector2(window.GetWidth(), window.GetHeight());
+            Vector2 pos = _Transform.Translation;
+            if (pos.x < 0 || pos.y < 0 || pos.x > size.x || pos.y > size.y)
+                Scene.RemoveGameObject(Self);            
         }
     }
 }

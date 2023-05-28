@@ -24,6 +24,8 @@ namespace TankGame
 
         public TankGame(ApplicationSpecification specification) : base(specification)
         {
+            Resources.Init();
+
             Scene = new Scene();
             SceneManager.LoadScene(Scene);
 
@@ -33,8 +35,11 @@ namespace TankGame
             manager.AddComponent<ScriptComponent>().Bind<ManagerScript>();
 
             TankBody = new GameObject("Tank Body");
+            GameObject turretPivot = new GameObject("Turret Pivot");
+            turretPivot.SetParent(ref TankBody);
+
             TankTurret = new GameObject("Tank Turret");
-            TankTurret.SetParent(ref TankBody);
+            TankTurret.SetParent(ref turretPivot);
 
             TankBody.AddComponent<ScriptComponent>().Bind<TankScript>();
             TankTurret.AddComponent<ScriptComponent>().Bind<TurretScript>();

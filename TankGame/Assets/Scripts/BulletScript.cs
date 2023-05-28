@@ -16,7 +16,7 @@ namespace TankGame.Assets.Scripts
         private Vector2 Velocity;
         private TransformComponent _Transform;
 
-        private const float Speed = 500.0f;
+        private const float Speed = 1500.0f;
         private const float Size = 5;
 
         public BulletScript(float angle)

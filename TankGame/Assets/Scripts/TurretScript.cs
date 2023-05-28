@@ -15,6 +15,8 @@ namespace TankGame.Assets.Scripts
         private TransformComponent _Transform;
         private TransformComponent BodyTransform;
 
+        public bool MouseControls = false;
+
         private const float RotationSpeed = 1.5f;
 
         public override void OnCreate()
@@ -32,19 +34,45 @@ namespace TankGame.Assets.Scripts
         public override void OnUpdate(Timestep ts)
         {
             // Rotation
-            if (Input.IsKeyPressed(Key.KEY_Q))
-                _Transform.Rotation.z -= RotationSpeed * ts;
-            if (Input.IsKeyPressed(Key.KEY_E))
-                _Transform.Rotation.z += RotationSpeed * ts;
+            if (MouseControls)
+            {
+                Vector3 mousePos = Input.GetMousePosition();
+                Vector3 tankPos = BodyTransform.Translation;
+                Quaternion tankRotation = new Quaternion(BodyTransform.Rotation + _Transform.Rotation);
 
-            // Shoot
-            if (Input.IsKeyTyped(Key.KEY_SPACE))
-                Shoot();
+                Vector3 dirToObject = (mousePos - tankPos);
+                dirToObject.Normalize();
+
+                Matrix4 tankMatrix = (Matrix4)tankRotation * Matrix4.Translation(tankPos);
+                Matrix4 inverseTankMatrix = tankMatrix.Inverse();
+
+                Vector3 mousePosTankSpace = inverseTankMatrix * dirToObject;
+                mousePosTankSpace.Normalize();
+
+                float angleToMouse = (float)Math.Atan2(mousePosTankSpace.y, mousePosTankSpace.x);
+
+                _Transform.Rotation.z += angleToMouse * RotationSpeed * ts;
+
+                if (Input.IsMouseButtonClicked(Mouse.MOUSE_BUTTON_LEFT))
+                    Shoot();
+            }
+            else
+            {
+                if (Input.IsKeyPressed(Key.KEY_Q))
+                    _Transform.Rotation.z -= RotationSpeed * ts;
+                if (Input.IsKeyPressed(Key.KEY_E))
+                    _Transform.Rotation.z += RotationSpeed * ts;
+
+                // Shoot
+                if (Input.IsKeyTyped(Key.KEY_SPACE))
+                    Shoot();
+            }
+
         }
 
         private void Shoot()
         {
-            GameObject bullet = new GameObject();
+            GameObject bullet = new GameObject("Bullet");
             float angle = BodyTransform.Rotation.z + _Transform.Rotation.z;
             bullet.AddComponent<ScriptComponent>().Bind<BulletScript>(angle);
 

@@ -18,7 +18,7 @@ namespace TankGame.Assets.Scripts
 
         public override void OnCreate()
         {
-            var sprite = AddComponent<SpriteComponent>(new Colour(255, 255, 255));
+            var sprite = AddComponent<SpriteComponent>(new Colour(152, 196, 92));
             sprite.Texture = Resources.Textures.TankTurret;
 
             Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
@@ -55,7 +55,12 @@ namespace TankGame.Assets.Scripts
 
                 float angleToMouse = (float)Math.Atan2(mousePosTankSpace.y, mousePosTankSpace.x);
 
-                PivotTransform.Rotation.z += angleToMouse * RotationSpeed * ts;
+                if (Math.Abs(angleToMouse) < (RotationSpeed * ts))
+                    PivotTransform.Rotation.z += angleToMouse * RotationSpeed * ts;
+                else if (angleToMouse < 0.0f)
+                    PivotTransform.Rotation.z -= RotationSpeed * ts;
+                else if (angleToMouse > 0.0f)
+                    PivotTransform.Rotation.z += RotationSpeed * ts;
 
                 if (Input.IsMouseButtonClicked(Mouse.MOUSE_BUTTON_LEFT))
                     Shoot();

@@ -9,7 +9,7 @@ namespace TankGame.Assets.Scripts
     {
         private TransformComponent _Transform;
 
-        private const float MovementSpeed = 50.0f;
+        private const float MovementSpeed = 75.0f;
         private const float RotationSpeed = 1.5f;
         private const float Scale = 150.0f;
 
@@ -18,7 +18,7 @@ namespace TankGame.Assets.Scripts
             Window window = Application.Instance.GetWindow();
             Transform.Translation = new Vector2(window.GetWidth() / 2f, window.GetHeight() / 2f);
 
-            var sprite = AddComponent<SpriteComponent>(new Colour(255, 255, 255));
+            var sprite = AddComponent<SpriteComponent>(new Colour(176, 223, 142));
             sprite.Texture = Resources.Textures.TankBody;
             Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
             tankTextSize.Normalize();

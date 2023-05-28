@@ -162,7 +162,11 @@ namespace TankGame
 
                 if (sprite.Texture is not null)
                 {
-                    ImGuiContext.ImageSize(sprite.Texture, 128, 128);
+                    ImGui.Text($"Texture: {sprite.Texture.Filepath}");
+                    const float size = 128;
+                    Vector2 texRatio = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
+                    texRatio.Normalize();
+                    ImGuiContext.ImageSize(sprite.Texture, (int)(texRatio.x * size), (int)(texRatio.y * size));
                 }
 
                 ImGui.Spacing();

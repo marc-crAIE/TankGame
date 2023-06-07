@@ -1,6 +1,7 @@
 ﻿using RayEngine.Core;
 using RayEngine.GameObjects;
 using RayEngine.Scenes;
+using Raylib_cs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,9 @@ namespace TankGame.Assets.Scripts
 
         public override void OnUpdate(Timestep ts)
         {
+            if (!ImGuiLayer.IsEnabled())
+                Raylib.DrawText("Press F1 to open the debug editor", 10, 10, 14, Color.RAYWHITE);
+
             if (Input.IsKeyTyped(Key.KEY_F1))
                 ImGuiLayer.Enable(!ImGuiLayer.IsEnabled());
         }

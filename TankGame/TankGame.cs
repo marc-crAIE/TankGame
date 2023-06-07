@@ -5,9 +5,12 @@ using RayEngine.GameObjects.Components;
 using RayEngine.Graphics;
 using RayEngine.ImGUI;
 using RayEngine.Scenes;
+using Raylib_cs;
 using SharpMaths;
 using System.Reflection;
+using System.Transactions;
 using TankGame.Assets.Scripts;
+using TankGame.Components;
 
 namespace TankGame
 {
@@ -34,6 +37,15 @@ namespace TankGame
             GameObject manager = new GameObject("Manager");
             manager.AddComponent<ScriptComponent>().Bind<ManagerScript>();
 
+            GameObject physicsManager = new GameObject("Physics Manager");
+            physicsManager.AddComponent<ScriptComponent>().Bind<PhysicsManagerScript>();
+
+            SpawnPlayer();
+            SpawnEnemy();
+        }
+
+        private void SpawnPlayer()
+        {
             TankBody = new GameObject("Tank Body");
             GameObject turretPivot = new GameObject("Turret Pivot");
             turretPivot.SetParent(ref TankBody);
@@ -45,6 +57,22 @@ namespace TankGame
             TankTurret.AddComponent<ScriptComponent>().Bind<TurretScript>();
             TurretScript = (TurretScript?)TankTurret.GetComponent<ScriptComponent>().Instance;
         }
+
+        private void SpawnEnemy()
+        {
+            GameObject enemyBody = new GameObject("Enemy Tank Body");
+            enemyBody.AddComponent<ScriptComponent>().Bind<EnemyTankScript>();
+            enemyBody.GetComponent<TransformComponent>().Rotation.z = SharpMath.ToRadians(30);
+
+            GameObject turretPivot = new GameObject("Enemy Turret Pivot");
+            turretPivot.SetParent(ref enemyBody);
+
+            GameObject tankTurret = new GameObject("Enemy Tank Turret");
+            tankTurret.SetParent(ref turretPivot);
+            tankTurret.AddComponent<ScriptComponent>().Bind<EnemyTurretScript>();
+        }
+
+        #region Debug Editor
 
         private void OnImGuiRender()
         {
@@ -141,11 +169,11 @@ namespace TankGame
                 System.Numerics.Vector3 rotation = SharpMath.ToDegrees(transform.Rotation);
                 System.Numerics.Vector3 scale = transform.Scale;
 
-                if (ImGui.DragFloat3("Translation", ref translation, 0.1f))
+                if (ImGui.DragFloat3("Translation##Transform", ref translation, 0.1f))
                     transform.Translation = translation;
-                if (ImGui.DragFloat3("Rotation", ref rotation, 0.1f))
+                if (ImGui.DragFloat3("Rotation##Transform", ref rotation, 0.1f))
                     transform.Rotation = SharpMath.ToRadians((Vector3)rotation);
-                if (ImGui.DragFloat3("Scale", ref scale, 0.1f))
+                if (ImGui.DragFloat3("Scale##Transform", ref scale, 0.1f))
                     transform.Scale = scale;
 
                 ImGui.Spacing();
@@ -157,7 +185,7 @@ namespace TankGame
 
                 ref var sprite = ref SelectedGameObject.GetComponent<SpriteComponent>();
                 System.Numerics.Vector4 colour = (Vector4)sprite.Colour;
-                if (ImGui.ColorEdit4("Colour", ref colour))
+                if (ImGui.ColorEdit4("Colour##Sprite", ref colour))
                     sprite.Colour = (Vector4)colour;
 
                 if (sprite.Texture is not null)
@@ -168,6 +196,24 @@ namespace TankGame
                     texRatio.Normalize();
                     ImGuiContext.ImageSize(sprite.Texture, (int)(texRatio.x * size), (int)(texRatio.y * size));
                 }
+
+                ImGui.Spacing();
+            }
+
+            if (SelectedGameObject.HasComponent<Rigidbody2D>())
+            {
+                ImGui.SeparatorText("Rigidbody2D Component");
+                ref var rigidbody = ref SelectedGameObject.GetComponent<Rigidbody2D>();
+                System.Numerics.Vector2 position = rigidbody.Position;
+                float rotation = rigidbody.Rotation;
+                System.Numerics.Vector2 scale = rigidbody.Scale;
+
+                if (ImGui.DragFloat2("Translation##RigidBody", ref position, 0.1f))
+                    rigidbody.Position = position;
+                if (ImGui.DragFloat("Rotation##RigidBody", ref rotation, 0.1f))
+                    rigidbody.Rotation = SharpMath.ToRadians(rotation);
+                if (ImGui.DragFloat2("Scale##RigidBody", ref scale, 0.1f))
+                    rigidbody.Scale = scale;
 
                 ImGui.Spacing();
             }
@@ -196,14 +242,13 @@ namespace TankGame
                             switch (value)
                             {
                                 case bool v:
-                                    ImGui.Checkbox(name, ref v);
+                                    ImGui.Checkbox($"{name}##Script", ref v);
                                     break;
                                 case GameObject gameObject:
                                     ImGui.Text($"{name}: {value}");
                                     ImGui.Text($"UUID: {gameObject.GetID()}");
                                     ImGui.Text($"Tag: {gameObject.GetTag()}");
                                     break;
-
                                 default:
                                     ImGui.Text($"{name}: {value}");
                                     break;
@@ -222,5 +267,7 @@ namespace TankGame
 
             ImGui.End();
         }
+
+        #endregion
     }
 }

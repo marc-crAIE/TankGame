@@ -9,7 +9,7 @@ namespace TankGame
     {
         static void Main(string[] args)
         {
-            ApplicationSpecification spec = new ApplicationSpecification("Sandbox App");
+            ApplicationSpecification spec = new ApplicationSpecification("Tank Game");
 
             Profiler.BeginSession("Startup", "startup.json");
 
@@ -20,6 +20,8 @@ namespace TankGame
             Profiler.BeginSession("Runtime", "runtime.json");
 
             game.Run();
+
+            Resources.Dispose();
 
             Profiler.EndSession();
         }

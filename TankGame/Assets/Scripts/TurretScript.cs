@@ -12,13 +12,14 @@ namespace TankGame.Assets.Scripts
         private TransformComponent BodyTransform;
 
         public bool MouseControls = false;
+        private Colour Colour = new Colour(152, 196, 92);
 
-        private const float RotationSpeed = 2.5f;
+        private const float RotationSpeed = 1.5f;
         private const float Scale = 1.0f;
 
         public override void OnCreate()
         {
-            var sprite = AddComponent<SpriteComponent>(new Colour(152, 196, 92));
+            var sprite = AddComponent<SpriteComponent>(Colour);
             sprite.Texture = Resources.Textures.TankTurret;
 
             Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
@@ -41,6 +42,8 @@ namespace TankGame.Assets.Scripts
             if (MouseControls)
             {
                 Vector3 mousePos = Input.GetMousePosition();
+                // The turret pivot is always dead center of the tanks body. If it was not you can get its position by
+                // multiplying the BodyTransform and the PivotTransform and then get the translation of the result
                 Vector3 tankPos = BodyTransform.Translation;
                 Quaternion turretRotation = new Quaternion(BodyTransform.Rotation + PivotTransform.Rotation);
 

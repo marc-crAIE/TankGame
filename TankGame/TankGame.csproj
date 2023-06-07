@@ -10,14 +10,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Textures\tank body enemy.png" />
     <None Remove="Assets\Textures\tank body.png" />
+    <None Remove="Assets\Textures\tank turret enemy.png" />
     <None Remove="Assets\Textures\tank turret.png" />
     <None Remove="Assets\Textures\tank_body.png" />
     <None Remove="Assets\Textures\tank_turret.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Assets\Textures\tank body enemy.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Textures\tank body.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Textures\tank turret enemy.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Textures\tank turret.png">

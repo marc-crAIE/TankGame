@@ -30,8 +30,8 @@ namespace TankGame.Assets.Scripts
             Transform.Scale = tankTextSize * Scale;
 
             _Transform = Transform;
-            GameObject? tankBody = Scene.GetWithTag("Tank Body");
-            PivotTransform = tankBody.GetChildrenWithTag("Turret Pivot").GetComponent<TransformComponent>();
+            GameObject? tankBody = Self.Parent?.Parent;
+            PivotTransform = Self.Parent?.GetComponent<TransformComponent>();
             if (tankBody is not null)
                 BodyTransform = tankBody.GetComponent<TransformComponent>();
         }
@@ -79,14 +79,13 @@ namespace TankGame.Assets.Scripts
                 if (Input.IsKeyTyped(Key.KEY_SPACE))
                     Shoot();
             }
-
         }
 
         private void Shoot()
         {
             GameObject bullet = new GameObject("Bullet");
             float angle = BodyTransform.Rotation.z + PivotTransform.Rotation.z;
-            bullet.AddComponent<ScriptComponent>().Bind<BulletScript>(angle);
+            bullet.AddComponent<ScriptComponent>().Bind<BulletScript>(angle, Scene.GetLayers().GetLayer("Enemy").GetID());
 
             var bulletTransform = bullet.GetComponent<TransformComponent>() = (Matrix4)BodyTransform * PivotTransform * _Transform;
             float turretLength = (BodyTransform.Scale * _Transform.Scale).x + _Transform.Translation.x;

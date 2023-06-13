@@ -1,12 +1,6 @@
 ﻿using RayEngine.GameObjects;
 using RayEngine.GameObjects.Components;
-using Raylib_cs;
 using SharpMaths;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TankGame.Assets.Scripts
 {
@@ -34,8 +28,8 @@ namespace TankGame.Assets.Scripts
             Transform.Scale = tankTextSize * Scale;
 
             _Transform = Transform;
-            GameObject? tankBody = Scene.GetWithTag("Enemy Tank Body");
-            PivotTransform = tankBody.GetChildrenWithTag("Enemy Turret Pivot").GetComponent<TransformComponent>();
+            GameObject? tankBody = Self.Parent?.Parent;
+            PivotTransform = Self.Parent?.GetComponent<TransformComponent>();
             if (tankBody is not null)
                 BodyTransform = tankBody.GetComponent<TransformComponent>();
         }

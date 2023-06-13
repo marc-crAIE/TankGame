@@ -23,17 +23,15 @@ namespace TankGame.Assets.Scripts
 
         public override void OnCreate()
         {
-            Window window = Application.Instance.GetWindow();
-            Transform.Translation = new Vector2(window.GetWidth() / 2f, window.GetHeight() / 2f);
-
             var sprite = AddComponent<SpriteComponent>(Colour);
             sprite.Texture = Resources.Textures.EnemyTankBody;
-            Vector2 tankTextSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
-            tankTextSize.Normalize();
-            Transform.Scale = tankTextSize * Scale;
+            Vector2 tankTextureSize = new Vector2(sprite.Texture.Width, sprite.Texture.Height);
+            tankTextureSize.Normalize();
+            Transform.Scale = tankTextureSize * Scale;
 
             Rigidbody2D rigidbody = AddComponent<Rigidbody2D>();
-            rigidbody.Scale = new Vector2(1.0f, 0.75f);
+            rigidbody.Scale = new Vector2(1.0f, 0.734f);
+            rigidbody.Mass = 60_000; // Mass of a tank is around 60 tons
 
             _Transform = Transform;
         }

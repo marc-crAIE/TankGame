@@ -1,5 +1,6 @@
 ﻿using RayEngine.Core;
 using RayEngine.GameObjects;
+using RayEngine.GameObjects.Components;
 using RayEngine.Scenes;
 using Raylib_cs;
 using System;

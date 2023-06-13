@@ -16,6 +16,8 @@ namespace TankGame
 
             public static Texture2D EnemyTankBody { get; internal set; }
             public static Texture2D EnemyTankTurret { get; internal set; }
+
+            public static Texture2D Blocker { get; internal set; }
         }
 
         public static void Init()
@@ -25,6 +27,8 @@ namespace TankGame
 
             Textures.EnemyTankBody = new Texture2D("Assets/Textures/tank body enemy.png");
             Textures.EnemyTankTurret = new Texture2D("Assets/Textures/tank turret enemy.png");
+
+            Textures.Blocker = new Texture2D("Assets/Textures/blocker.png");
         }
 
         public static void Dispose()
@@ -33,6 +37,7 @@ namespace TankGame
             Textures.TankTurret.Dispose();
             Textures.EnemyTankBody.Dispose();
             Textures.EnemyTankTurret.Dispose();
+            Textures.Blocker.Dispose();
         }
     }
 }

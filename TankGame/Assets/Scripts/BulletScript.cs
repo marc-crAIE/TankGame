@@ -16,12 +16,18 @@ namespace TankGame.Assets.Scripts
         private const float Size = 5;
 
         private bool Collided = false;
+        private int TargetLayer = -1;
 
         public BulletScript(float angle)
         {
             Angle = angle;
             Velocity = new Vector2((float)Math.Cos(Angle), (float)Math.Sin(Angle));
             _Transform = new TransformComponent();
+        }
+
+        public BulletScript(float angle, int targetLayer) : this(angle)
+        {
+            TargetLayer = targetLayer;
         }
 
         public override void OnCreate()
@@ -49,8 +55,12 @@ namespace TankGame.Assets.Scripts
 
         public override void OnCollision2D(GameObject other)
         {
-            Console.WriteLine($"{Self.GetTag()} colliding with {other.GetTag()}");
-            Collided = true;
+            if (TargetLayer != -1 && other.LayerID == TargetLayer)
+            {
+                Console.WriteLine($"{Self.GetTag()} colliding with {other.GetTag()}");
+                Collided = true;
+                return;
+            }
         }
     }
 }

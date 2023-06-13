@@ -14,19 +14,15 @@ namespace TankGame.Assets.Scripts
 {
     internal class PhysicsManagerScript : ScriptableGameObject
     {
-        private struct Polygon
-        {
-            public Vector2[] Points; // Transformed points
-            public Vector2 Position;
-            public float Rotation;
-            public Vector2[] Vertices; // Polygon model
-        }
-
-        private bool RenderPhysicsBoxes = false;
+        public bool ExperimentalPhysics = true;
+        public bool RenderPhysicsBoxes = false;
+        private Timestep DeltaTime = 0;
 
         public override void OnUpdate(Timestep ts)
         {
             using var _it = Profiler.Function();
+
+            DeltaTime = ts;
 
             EntityRegistry registry = Scene.GetRegistry();
             EntityQuery physicsEntities = registry.GetEntities().With<Rigidbody2D>();
@@ -69,12 +65,57 @@ namespace TankGame.Assets.Scripts
                         Raylib.DrawRectangleLines((int)rectB.x, (int)rectB.y, (int)rectB.width, (int)rectB.height, collision ? Color.RED : Color.GREEN);
                     }
 
+                    float overlap = float.MaxValue;
                     if (collision)
-                        collision = NarrowCollision(polyA, polyB);
+                        collision = NarrowCollision(ref polyA, ref polyB, out overlap);
 
                     // Still colliding after narrow collision
                     if (collision)
                     {
+                        TransformComponent transformA = registry.Get<TransformComponent>(entityA);
+                        TransformComponent transformB = registry.Get<TransformComponent>(entityB);
+
+                        // Resolve collision
+                        if (ExperimentalPhysics)
+                        {
+                            Rigidbody2D rigidBodyA = registry.Get<Rigidbody2D>(entityA);
+                            Rigidbody2D rigidBodyB = registry.Get<Rigidbody2D>(entityB);
+
+                            Vector2 collisionNormal = polyB.Position - polyA.Position;
+                            Vector2 relativeVelocity = rigidBodyB.Velocity - rigidBodyA.Velocity;
+
+                            Vector2 sizeA = transformA.Scale * rigidBodyA.Scale;
+                            Vector2 sizeB = transformB.Scale * rigidBodyB.Scale;
+                            float radiusA = 0.5f * sizeA.Magnitude();
+                            float radiusB = 0.5f * sizeB.Magnitude();
+
+                            float relativeVelocityAlongNormal = relativeVelocity.Dot(collisionNormal)
+                                        + ((radiusA * rigidBodyA.AngularVelocity) - (radiusB * rigidBodyB.AngularVelocity));
+
+                            if (relativeVelocityAlongNormal > 0)
+                                relativeVelocityAlongNormal = -relativeVelocityAlongNormal;
+
+                            float restitution = 0.2f; // Adjust as needed
+                            float impulse = ((1 + restitution) * relativeVelocityAlongNormal) / (rigidBodyA.Mass * rigidBodyB.Mass);
+
+                            polyA.Position += impulse * collisionNormal * rigidBodyB.Mass;
+                            polyB.Position -= impulse * collisionNormal * rigidBodyA.Mass;
+                        }
+                        else
+                        {
+                            // Very dirty collision resolution
+                            Vector2 d = polyB.Position - polyA.Position;
+                            float s = d.Magnitude();
+                            if (s != 0)
+                            {
+                                polyA.Position.x -= overlap * d.x / s;
+                                polyA.Position.y -= overlap * d.y / s;
+                            }
+                        }
+
+                        transformA.Translation = polyA.Position;
+                        transformB.Translation = polyB.Position;
+
                         // Try to run the OnCollision2D function for both
                         ScriptablePhysicsGameObject? scriptA = null;
                         ScriptablePhysicsGameObject? scriptB = null;
@@ -96,11 +137,14 @@ namespace TankGame.Assets.Scripts
                 registry.Get<Rigidbody2D>(entities[i]).Dirty = false;
         }
 
-        private bool NarrowCollision(Polygon poly1, Polygon poly2)
+        private bool NarrowCollision(ref Polygon poly1, ref Polygon poly2, out float overlap)
         {
             using var _it = Profiler.Function();
 
-            bool collision = true;
+            overlap = float.MaxValue;
+
+            Polygon p1 = poly1;
+            Polygon p2 = poly2;
 
             // Check edge normals for both shapes
             for (int shape = 0; shape < 2; shape++)
@@ -108,44 +152,47 @@ namespace TankGame.Assets.Scripts
                 if (shape == 1)
                 {
                     // Do the other shape
-                    Polygon temp = poly1;
-                    poly1 = poly2;
-                    poly2 = temp;
+                    Polygon temp = p1;
+                    p1 = p2;
+                    p2 = temp;
                 }
 
-                for (int a = 0; a < poly1.Points.Length; a++)
+                for (int a = 0; a < p1.Points.Length; a++)
                 {
-                    int b = (a + 1) % poly1.Points.Length;
-                    Vector2 axisProj = new Vector2(-(poly1.Points[b].y - poly1.Points[a].y), poly1.Points[b].x - poly1.Points[a].x);
+                    int b = (a + 1) % p1.Points.Length;
+                    Vector2 axisProj = new Vector2(-(p1.Points[b].y - p1.Points[a].y), p1.Points[b].x - p1.Points[a].x);
                     axisProj.Normalize();
 
                     // Work out min and max 1D points for poly1
                     float min_r1 = float.MaxValue, max_r1 = -float.MaxValue;
-                    for (int p = 0; p < poly1.Points.Length; p++)
+                    for (int p = 0; p < p1.Points.Length; p++)
                     {
-                        float q = (poly1.Points[p].x * axisProj.x + poly1.Points[p].y * axisProj.y);
+                        float q = (p1.Points[p].x * axisProj.x + p1.Points[p].y * axisProj.y);
                         min_r1 = MathF.Min(min_r1, q);
                         max_r1 = MathF.Max(max_r1, q);
                     }
 
                     // Work out min and max 1D points for poly2
                     float min_r2 = float.MaxValue, max_r2 = -float.MaxValue;
-                    for (int p = 0; p < poly2.Points.Length; p++)
+                    for (int p = 0; p < p2.Points.Length; p++)
                     {
-                        float q = (poly2.Points[p].x * axisProj.x + poly2.Points[p].y * axisProj.y);
+                        float q = (p2.Points[p].x * axisProj.x + p2.Points[p].y * axisProj.y);
                         min_r2 = MathF.Min(min_r2, q);
                         max_r2 = MathF.Max(max_r2, q);
                     }
+
+                    // Calculate the actualy overlap along the projected axis
+                    overlap = MathF.Min(MathF.Min(max_r1, max_r2) - MathF.Max(min_r1, min_r2), overlap);
 
                     // Check if they are not colliding
                     if (!(max_r2 >= min_r1 && max_r1 >= min_r2))
                     {
                         if (RenderPhysicsBoxes)
                         {
-                            Rectangle rect1 = new Rectangle(poly1.Position, poly1.Vertices[0] * 2);
-                            Rectangle rect2 = new Rectangle(poly2.Position, poly2.Vertices[0] * 2);
-                            Raylib.DrawRectanglePro(rect1.ToRLRectangle(), rect1.Size / 2, SharpMath.ToDegrees(poly1.Rotation), Color.GREEN);
-                            Raylib.DrawRectanglePro(rect2.ToRLRectangle(), rect2.Size / 2, SharpMath.ToDegrees(poly2.Rotation), Color.GREEN);
+                            Rectangle rect1 = new Rectangle(p1.Position, p1.Vertices[0] * 2);
+                            Rectangle rect2 = new Rectangle(p2.Position, p2.Vertices[0] * 2);
+                            Raylib.DrawRectanglePro(rect1.ToRLRectangle(), rect1.Size / 2, SharpMath.ToDegrees(p1.Rotation), Color.GREEN);
+                            Raylib.DrawRectanglePro(rect2.ToRLRectangle(), rect2.Size / 2, SharpMath.ToDegrees(p2.Rotation), Color.GREEN);
                         }
                         return false;
                     }
@@ -154,10 +201,10 @@ namespace TankGame.Assets.Scripts
 
             if (RenderPhysicsBoxes)
             {
-                Rectangle rect1 = new Rectangle(poly1.Position, poly1.Vertices[0] * 2);
-                Rectangle rect2 = new Rectangle(poly2.Position, poly2.Vertices[0] * 2);
-                Raylib.DrawRectanglePro(rect1.ToRLRectangle(), rect1.Size / 2, SharpMath.ToDegrees(poly1.Rotation), Color.RED);
-                Raylib.DrawRectanglePro(rect2.ToRLRectangle(), rect2.Size / 2, SharpMath.ToDegrees(poly2.Rotation), Color.RED);
+                Rectangle rect1 = new Rectangle(p1.Position, p1.Vertices[0] * 2);
+                Rectangle rect2 = new Rectangle(p2.Position, p2.Vertices[0] * 2);
+                Raylib.DrawRectanglePro(rect1.ToRLRectangle(), rect1.Size / 2, SharpMath.ToDegrees(p1.Rotation), Color.RED);
+                Raylib.DrawRectanglePro(rect2.ToRLRectangle(), rect2.Size / 2, SharpMath.ToDegrees(p2.Rotation), Color.RED);
             }
 
             return true;

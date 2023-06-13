@@ -21,9 +21,12 @@ namespace TankGame
         private GameObject TankTurret;
 
         private TurretScript? TurretScript;
+        private PhysicsManagerScript? PhysicsManagerScript;
 
         private GameObject? SelectedGameObject = null;
         private float OverlayWidth = 0.0f;
+
+        private Random Rand = new Random();
 
         public TankGame(ApplicationSpecification specification) : base(specification)
         {
@@ -34,11 +37,30 @@ namespace TankGame
 
             Scene.OnImGUIRender = OnImGuiRender;
 
+            Scene.GetLayers().AddLayerName("Player", 2).Enable();
+            Scene.GetLayers().AddLayerName("Enemy", 3).Enable();
+
             GameObject manager = new GameObject("Manager");
             manager.AddComponent<ScriptComponent>().Bind<ManagerScript>();
 
             GameObject physicsManager = new GameObject("Physics Manager");
             physicsManager.AddComponent<ScriptComponent>().Bind<PhysicsManagerScript>();
+            PhysicsManagerScript = (PhysicsManagerScript?)physicsManager.GetComponent<ScriptComponent>().Instance;
+
+            for (int i = 0; i < 3; i++)
+            {
+
+                float positionAngle = ((float)Rand.NextDouble() * 2f - 1) * MathF.PI;
+                float rotationAngle = Rand.Next(-180, 180);
+                Vector2 position = new Vector2(MathF.Sin(positionAngle), MathF.Cos(positionAngle));
+                position.Normalize();
+                position.x *= Rand.Next(150, 300);
+                position.y *= Rand.Next(150, 300);
+
+                position = (GetWindow().GetSize() / 2) - position;
+
+                SpawnBlocker(position, rotationAngle);
+            }
 
             SpawnPlayer();
             SpawnEnemy();
@@ -47,13 +69,14 @@ namespace TankGame
         private void SpawnPlayer()
         {
             TankBody = new GameObject("Tank Body");
+            TankBody.AddComponent<ScriptComponent>().Bind<TankScript>();
+            TankBody.LayerID = Scene.GetLayers().GetLayer("Player").GetID();
+
             GameObject turretPivot = new GameObject("Turret Pivot");
             turretPivot.SetParent(ref TankBody);
 
             TankTurret = new GameObject("Tank Turret");
             TankTurret.SetParent(ref turretPivot);
-
-            TankBody.AddComponent<ScriptComponent>().Bind<TankScript>();
             TankTurret.AddComponent<ScriptComponent>().Bind<TurretScript>();
             TurretScript = (TurretScript?)TankTurret.GetComponent<ScriptComponent>().Instance;
         }
@@ -62,7 +85,21 @@ namespace TankGame
         {
             GameObject enemyBody = new GameObject("Enemy Tank Body");
             enemyBody.AddComponent<ScriptComponent>().Bind<EnemyTankScript>();
-            enemyBody.GetComponent<TransformComponent>().Rotation.z = SharpMath.ToRadians(30);
+
+            float positionAngle = ((float)Rand.NextDouble() * 2f - 1) * MathF.PI;
+            float rotationAngle = ((float)Rand.NextDouble() * 2f - 1) * MathF.PI;
+            Vector2 position = new Vector2(MathF.Sin(positionAngle), MathF.Cos(positionAngle));
+            position.Normalize();
+            position.x *= Rand.Next(150, 300);
+            position.y *= Rand.Next(150, 300);
+
+            position = (GetWindow().GetSize() / 2) - position;
+
+            ref TransformComponent transform = ref enemyBody.GetComponent<TransformComponent>();
+            transform.Translation = position;
+            transform.Rotation.z = rotationAngle;
+
+            enemyBody.LayerID = Scene.GetLayers().GetLayer("Enemy").GetID();
 
             GameObject turretPivot = new GameObject("Enemy Turret Pivot");
             turretPivot.SetParent(ref enemyBody);
@@ -70,6 +107,16 @@ namespace TankGame
             GameObject tankTurret = new GameObject("Enemy Tank Turret");
             tankTurret.SetParent(ref turretPivot);
             tankTurret.AddComponent<ScriptComponent>().Bind<EnemyTurretScript>();
+        }
+
+        private void SpawnBlocker(Vector2 position, float angle)
+        {
+            GameObject blocker = new GameObject("Blocker");
+            blocker.AddComponent<ScriptComponent>().Bind<BlockerScript>();
+
+            ref TransformComponent transform = ref blocker.GetComponent<TransformComponent>();
+            transform.Translation = position;
+            transform.Rotation.z = SharpMath.ToRadians(angle);
         }
 
         #region Debug Editor
@@ -100,8 +147,14 @@ namespace TankGame
 
             ImGui.SeparatorText("Settings");
 
-            if (TurretScript is not  null)
+            if (TurretScript is not null)
                 ImGui.Checkbox("Turret Mouse Controls", ref TurretScript.MouseControls);
+
+            if (PhysicsManagerScript is not null)
+            {
+                ImGui.Checkbox("Show Collision Boxes", ref PhysicsManagerScript.RenderPhysicsBoxes);
+                ImGui.Checkbox("Experimental Physics", ref PhysicsManagerScript.ExperimentalPhysics);
+            }
 
             ImGui.SeparatorText("Object Hierarchy");
 
@@ -155,6 +208,7 @@ namespace TankGame
 
             ImGui.Text($"UUID: {SelectedGameObject.GetID()}");
             ImGui.Text($"Tag: {SelectedGameObject.GetTag()}");
+            ImGui.Text($"Layer: {Scene.GetLayers().GetLayer(SelectedGameObject.LayerID).GetName()}");
 
             //TODO: Make tags editable without freaking out the tree
             //ImGui.SameLine();
